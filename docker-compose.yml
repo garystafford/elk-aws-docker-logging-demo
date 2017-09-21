@@ -12,11 +12,11 @@ services:
     - "12201:12201/udp" # gelf
     environment:
       LOGSPOUT: ignore
+      SERVICE_NAME: elk
+      DEPLOY_ENV: ${DEPLOY_ENV}
     logging:
       driver: json-file
       options:
-        tag: docker.{{.Name}}
-        env: SERVICE_NAME,SERVICE_ENV
         max-size: 10m
     deploy:
       placement:
@@ -38,13 +38,14 @@ services:
     networks:
     - elk-demo
     environment:
+      SERVICE_NAME: logspout
+      DEPLOY_ENV: ${DEPLOY_ENV}
       ROUTE_URIS: "logstash://${ELK_IP}:5000"
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
     logging:
       driver: json-file
       options:
-        tag: docker.{{.Name}}
         env: SERVICE_NAME,SERVICE_ENV
         max-size: 10m
     deploy:
@@ -67,7 +68,6 @@ services:
     logging:
       driver: json-file
       options:
-        tag: docker.{{.Name}}
         env: SERVICE_NAME,SERVICE_ENV
         max-size: 10m
     deploy:
@@ -84,6 +84,7 @@ services:
         delay: 5s
     environment:
       SERVICE_NAME: fluentd
+      DEPLOY_ENV: ${DEPLOY_ENV}
 
   nginx:
     image: garystafford/custom-nginx:latest
@@ -94,9 +95,11 @@ services:
     logging:
       driver: json-file
       options:
-        tag: docker.{{.Name}}
         env: SERVICE_NAME,SERVICE_ENV
         max-size: 10m
+    environment:
+      SERVICE_NAME: nginx
+      DEPLOY_ENV: ${DEPLOY_ENV}
     deploy:
       placement:
         constraints:
@@ -178,7 +181,6 @@ services:
     logging:
       driver: json-file
       options:
-        tag: docker.{{.Name}}
         env: SERVICE_NAME,SERVICE_ENV
         max-size: 10m
     deploy:
@@ -209,6 +211,14 @@ services:
     - elk-demo
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
+    logging:
+      driver: json-file
+      options:
+        env: SERVICE_NAME,SERVICE_ENV
+        max-size: 10m
+    environment:
+      SERVICE_NAME: visualizer
+      DEPLOY_ENV: ${DEPLOY_ENV}
     deploy:
       placement:
         constraints:
