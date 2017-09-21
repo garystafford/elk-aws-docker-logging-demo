@@ -66,10 +66,7 @@ services:
     networks:
     - elk-demo
     logging:
-      driver: json-file
-      options:
-        env: SERVICE_NAME,DEPLOY_ENV
-        max-size: 10m
+      driver: none
     deploy:
       mode: global
       placement:
