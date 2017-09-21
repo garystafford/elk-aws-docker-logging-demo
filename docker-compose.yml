@@ -1,0 +1,216 @@
+version: '3.1'
+services:
+  elk:
+    image: garystafford/custom-elk:latest
+    networks:
+    - elk-demo
+    ports:
+    - "5601:5601/tcp"
+    - "9200:9200/tcp"
+    - "5044:5044/tcp"
+    - "5000:5000/udp"   # logspout
+    - "12201:12201/udp" # gelf
+    environment:
+      LOGSPOUT: ignore
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    deploy:
+      placement:
+        constraints:
+        - node.hostname == ${WORKER_NODE_1}
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        delay: 5s
+    volumes:
+    - esdata:/var/lib/elasticsearch
+
+  logspout:
+    image: garystafford/custom-logspout:latest
+    networks:
+    - elk-demo
+    environment:
+      ROUTE_URIS: "logstash://${ELK_IP}:5000"
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    deploy:
+      mode: global
+      placement:
+        constraints:
+        - node.hostname == ${WORKER_NODE_2}
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        delay: 10s
+
+  fluentd:
+    image: garystafford/custom-fluentd:latest
+    ports:
+    - "24224:24224/tcp"
+    - "24224:24224/udp"
+    networks:
+    - elk-demo
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    deploy:
+      mode: global
+      placement:
+        constraints:
+        - node.hostname == ${WORKER_NODE_2}
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        delay: 5s
+    environment:
+      SERVICE_NAME: fluentd
+
+  nginx:
+    image: garystafford/custom-nginx:latest
+    ports:
+    - "80:80/tcp"
+    networks:
+    - elk-demo
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    deploy:
+      placement:
+        constraints:
+        - node.hostname == ${WORKER_NODE_2}
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        delay: 5s
+
+  hello-gelf:
+    image: garystafford/hello-logging:latest
+    networks:
+    - elk-demo
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://${ELK_IP}:12201"
+        tag: docker.{{.Name}}
+        env: SERVICE_NAME,SERVICE_ENV
+    deploy:
+      placement:
+        constraints:
+        - node.hostname == ${WORKER_NODE_2}
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        delay: 5s
+    environment:
+      LOGSPOUT: ignore
+      SERVICE_NAME: hello-gelf
+      DEPLOY_ENV: ${DEPLOY_ENV}
+    command: "java \
+      -Dspring.profiles.active=development \
+      -Djava.security.egd=file:/dev/./urandom \
+      -jar hello-world.jar"
+
+  hello-fluentd:
+    image: garystafford/hello-logging:latest
+    networks:
+    - elk-demo
+    logging:
+      driver: fluentd
+      options:
+        tag: docker.{{.Name}}
+        env: SERVICE_NAME,SERVICE_ENV
+    deploy:
+      placement:
+        constraints:
+        - node.hostname == ${WORKER_NODE_2}
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        delay: 5s
+    environment:
+      SERVICE_NAME: hello-fluentd
+      DEPLOY_ENV: ${DEPLOY_ENV}
+      LOGSPOUT: ignore
+    command: "java \
+      -Dspring.profiles.active=development \
+      -Djava.security.egd=file:/dev/./urandom \
+      -jar hello-world.jar"
+
+  hello-logspout:
+    image: garystafford/hello-logging:latest
+    networks:
+    - elk-demo
+    deploy:
+      placement:
+        constraints:
+        - node.hostname == ${WORKER_NODE_2}
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        delay: 5s
+    environment:
+      SERVICE_NAME: hello-logspout
+      DEPLOY_ENV: ${DEPLOY_ENV}
+    command: "java \
+      -Dspring.profiles.active=development \
+      -Djava.security.egd=file:/dev/./urandom \
+      -jar hello-world.jar"
+
+  visualizer:
+    image: dockersamples/visualizer:latest
+    ports:
+    - "8400:8080/tcp"
+    networks:
+    - elk-demo
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      placement:
+        constraints:
+        - node.role == manager
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        delay: 5s
+
+volumes:
+  esdata:
+
+networks:
+  elk-demo:
+    driver: overlay
