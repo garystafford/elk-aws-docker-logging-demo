@@ -5,11 +5,11 @@ services:
     networks:
     - elk-demo
     ports:
-    - "5601:5601/tcp"
-    - "9200:9200/tcp"
-    - "5044:5044/tcp"
-    - "5000:5000/udp"   # logspout
-    - "12201:12201/udp" # gelf
+    - "5601:5601/tcp"   # Kibana web interface
+    - "9200:9200/tcp"   # Elasticsearch JSON interface
+    - "5044:5044/tcp"   # Logstash Beats (not used)
+    - "5000:5000/udp"   # Logspout
+    - "12201:12201/udp" # GELF
     environment:
       LOGSPOUT: ignore
       SERVICE_NAME: elk
@@ -21,7 +21,7 @@ services:
     deploy:
       placement:
         constraints:
-        - node.hostname == ${WORKER_NODE_1}
+        - node.hostname == ${WORKER_NODE_3}
       replicas: 1
       update_config:
         parallelism: 1
@@ -52,7 +52,8 @@ services:
       mode: global
       placement:
         constraints:
-        - node.hostname == ${WORKER_NODE_2}
+        - node.role == worker
+        - node.hostname != ${WORKER_NODE_3}
       restart_policy:
         condition: on-failure
         max_attempts: 3
@@ -61,17 +62,20 @@ services:
   fluentd:
     image: garystafford/custom-fluentd:latest
     ports:
-    - "24224:24224/tcp"
-    - "24224:24224/udp"
+    - "24224:24224/tcp" # receive the event stream
+    - "24224:24224/udp" # receive heartbeat messages
     networks:
     - elk-demo
     logging:
-      driver: none
+      driver: json-file
+      options:
+        max-size: 10m
     deploy:
       mode: global
       placement:
         constraints:
-        - node.hostname == ${WORKER_NODE_2}
+        - node.role == worker
+        - node.hostname != ${WORKER_NODE_3}
       update_config:
         parallelism: 1
         delay: 10s
@@ -80,7 +84,7 @@ services:
         max_attempts: 3
         delay: 5s
     environment:
-      LOGSPOUT: ignore
+      # LOGSPOUT: ignore
       SERVICE_NAME: fluentd
       DEPLOY_ENV: ${DEPLOY_ENV}
 
@@ -101,8 +105,9 @@ services:
     deploy:
       placement:
         constraints:
-        - node.hostname == ${WORKER_NODE_2}
-      replicas: 1
+        - node.role == worker
+        - node.hostname != ${WORKER_NODE_3}
+      replicas: 2
       update_config:
         parallelism: 1
         delay: 10s
@@ -124,7 +129,8 @@ services:
     deploy:
       placement:
         constraints:
-        - node.hostname == ${WORKER_NODE_2}
+        - node.role == worker
+        - node.hostname != ${WORKER_NODE_3}
       replicas: 2
       update_config:
         parallelism: 1
@@ -154,7 +160,8 @@ services:
     deploy:
       placement:
         constraints:
-        - node.hostname == ${WORKER_NODE_2}
+        - node.role == worker
+        - node.hostname != ${WORKER_NODE_3}
       replicas: 2
       update_config:
         parallelism: 1
@@ -184,7 +191,8 @@ services:
     deploy:
       placement:
         constraints:
-        - node.hostname == ${WORKER_NODE_2}
+        - node.role == worker
+        - node.hostname != ${WORKER_NODE_3}
       replicas: 2
       update_config:
         parallelism: 1
@@ -201,10 +209,39 @@ services:
       -Djava.security.egd=file:/dev/./urandom \
       -jar hello-world.jar"
 
-  visualizer:
-    image: dockersamples/visualizer:latest
+  # visualizer:
+  #   image: dockersamples/visualizer:latest
+  #   ports:
+  #   - "8400:8080/tcp"
+  #   networks:
+  #   - elk-demo
+  #   volumes:
+  #   - /var/run/docker.sock:/var/run/docker.sock
+  #   logging:
+  #     driver: json-file
+  #     options:
+  #       env: SERVICE_NAME,DEPLOY_ENV
+  #       max-size: 10m
+  #   environment:
+  #     SERVICE_NAME: visualizer
+  #     DEPLOY_ENV: ${DEPLOY_ENV}
+  #   deploy:
+  #     mode: global
+  #     placement:
+  #       constraints:
+  #       - node.role == manager
+  #     update_config:
+  #       parallelism: 1
+  #       delay: 10s
+  #     restart_policy:
+  #       condition: on-failure
+  #       max_attempts: 3
+  #       delay: 5s
+
+  portainer:
+    image: portainer/portainer:latest
     ports:
-    - "8400:8080/tcp"
+    - "9000:9000/tcp"
     networks:
     - elk-demo
     volumes:
@@ -218,10 +255,10 @@ services:
       SERVICE_NAME: visualizer
       DEPLOY_ENV: ${DEPLOY_ENV}
     deploy:
+      mode: global
       placement:
         constraints:
         - node.role == manager
-      replicas: 1
       update_config:
         parallelism: 1
         delay: 10s
