@@ -84,7 +84,7 @@ services:
         max_attempts: 3
         delay: 5s
     environment:
-      # LOGSPOUT: ignore
+      LOGSPOUT: ignore
       SERVICE_NAME: fluentd
       DEPLOY_ENV: ${DEPLOY_ENV}
 
