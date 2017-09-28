@@ -144,7 +144,7 @@ services:
       SERVICE_NAME: hello-gelf
       DEPLOY_ENV: ${DEPLOY_ENV}
     command: "java \
-      -Dspring.profiles.active=development \
+      -Dspring.profiles.active=${DEPLOY_ENV} \
       -Djava.security.egd=file:/dev/./urandom \
       -jar hello-world.jar"
 
@@ -175,7 +175,7 @@ services:
       DEPLOY_ENV: ${DEPLOY_ENV}
       LOGSPOUT: ignore
     command: "java \
-      -Dspring.profiles.active=development \
+      -Dspring.profiles.active=${DEPLOY_ENV} \
       -Djava.security.egd=file:/dev/./urandom \
       -jar hello-world.jar"
 
@@ -205,7 +205,7 @@ services:
       SERVICE_NAME: hello-logspout
       DEPLOY_ENV: ${DEPLOY_ENV}
     command: "java \
-      -Dspring.profiles.active=development \
+      -Dspring.profiles.active=${DEPLOY_ENV} \
       -Djava.security.egd=file:/dev/./urandom \
       -jar hello-world.jar"
 

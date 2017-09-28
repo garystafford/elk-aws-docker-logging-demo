@@ -1,12 +1,15 @@
 #!/bin/sh
 
-export WORKER_NODE_3='ip-172-31-5-65.ec2.internal'
-export DEPLOY_ENV='development'
-export ELK_IP='172.31.5.65'
+# Deploy the ELK Demo Docker service stack
+# Maintainer: Gary A. Stafford <garystafford@rochester.rr.com>
 
-echo "\ndeploying stack..."
+export WORKER_NODE_3='ip-172-31-5-65.ec2.internal'  # Hostname of ELK Worker Node - Change as required!
+export ELK_IP='172.31.5.65' # IP address of ELK Worker Node - Change as required!
+export DEPLOY_ENV='development' # name of Spring Active Profile
+
+echo "\n Deploying stack..."
 docker stack deploy --compose-file=docker-compose.yml --with-registry-auth elk-demo
 
-echo "\nwaiting for all services to come up..."
-sleep 10s
+echo "\n Waiting for all services to fully start..."
+sleep 15s
 docker service ls
