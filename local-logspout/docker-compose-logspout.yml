@@ -1,0 +1,31 @@
+version: '3.1'
+services:
+  elk:
+    image: garystafford/custom-elk:latest
+    ports:
+    - "5601:5601/tcp"   # Kibana web interface
+    - "9200:9200/tcp"   # Elasticsearch JSON interface
+    - "5000:5000/udp"   # Logspout
+    volumes:
+    - esdata:/var/lib/elasticsearch
+
+  logspout:
+    image: garystafford/custom-logspout:latest
+    environment:
+      ROUTE_URIS: "logstash://elk:5000"
+      LOGSPOUT: ignore
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+
+  hello-logspout:
+    image: garystafford/hello-logging:latest
+    environment:
+      SERVICE_NAME: hello-logspout
+      DEPLOY_ENV: development
+    command: "java \
+      -Dspring.profiles.active=development \
+      -Djava.security.egd=file:/dev/./urandom \
+      -jar hello-world.jar"
+
+volumes:
+  esdata:
