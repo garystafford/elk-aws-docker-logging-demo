@@ -6,14 +6,27 @@ services:
     - "5601:5601/tcp"   # Kibana web interface
     - "9200:9200/tcp"   # Elasticsearch JSON interface
     - "5000:5000/udp"   # Logspout
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    environment:
+      LOGSPOUT: ignore
+    restart: unless-stopped
     volumes:
     - esdata:/var/lib/elasticsearch
 
   logspout:
     image: garystafford/custom-logspout:latest
     environment:
+      DOCKER_LABELS: "show_lables"
       ROUTE_URIS: "logstash://elk:5000"
       LOGSPOUT: ignore
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    restart: unless-stopped
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
 
@@ -22,6 +35,10 @@ services:
     environment:
       SERVICE_NAME: hello-logspout
       DEPLOY_ENV: development
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
     command: "java \
       -Dspring.profiles.active=development \
       -Djava.security.egd=file:/dev/./urandom \

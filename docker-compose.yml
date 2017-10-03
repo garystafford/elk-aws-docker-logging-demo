@@ -28,8 +28,8 @@ services:
         delay: 10s
       restart_policy:
         condition: on-failure
-        max_attempts: 3
-        delay: 5s
+        max_attempts: 8
+        delay: 15s
     volumes:
     - esdata:/var/lib/elasticsearch
 
@@ -41,6 +41,7 @@ services:
       SERVICE_NAME: logspout
       DEPLOY_ENV: ${DEPLOY_ENV}
       ROUTE_URIS: "logstash://${ELK_IP}:5000"
+      DOCKER_LABELS: "show_lables"
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
     logging:
@@ -56,8 +57,8 @@ services:
         - node.hostname != ${WORKER_NODE_3}
       restart_policy:
         condition: on-failure
-        max_attempts: 3
-        delay: 10s
+        max_attempts: 8
+        delay: 15s
 
   fluentd:
     image: garystafford/custom-fluentd:latest
@@ -81,8 +82,8 @@ services:
         delay: 10s
       restart_policy:
         condition: on-failure
-        max_attempts: 3
-        delay: 5s
+        max_attempts: 8
+        delay: 15s
     environment:
       LOGSPOUT: ignore
       SERVICE_NAME: fluentd

@@ -1,8 +1,7 @@
 #!/bin/sh
 
-# Deploy the ELK Demo Docker service stack
+# Deploy the Lospout portion of the ELK Demo Docker stack locally
 # Maintainer: Gary A. Stafford <garystafford@rochester.rr.com>
-# docker build -t garystafford/custom-logspout:latest .
 
 echo "\n Deploying services..."
 docker-compose -f docker-compose-logspout.yml -p elk up -d
