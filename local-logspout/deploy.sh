@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Deploy the Lospout portion of the ELK Demo Docker stack locally
+# Deploy the Logspout portion of the ELK Demo locally
 # Maintainer: Gary A. Stafford <garystafford@rochester.rr.com>
 
 echo "\n Deploying services..."

@@ -1,3 +1,6 @@
+# ELK Demo Docker service stack
+# Maintainer: Gary A. Stafford <garystafford@rochester.rr.com>
+
 version: '3.1'
 services:
   elk:
