@@ -34,7 +34,7 @@ services:
     - /var/run/docker.sock:/var/run/docker.sock
 
   hello-logspout:
-    image: garystafford/hello-logging:latest
+    image: garystafford/hello-world:latest
     environment:
       SERVICE_NAME: hello-logspout
       DEPLOY_ENV: development
