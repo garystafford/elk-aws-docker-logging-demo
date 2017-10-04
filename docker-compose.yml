@@ -121,7 +121,7 @@ services:
         delay: 5s
 
   hello-gelf:
-    image: garystafford/hello-logging:latest
+    image: garystafford/hello-world:latest
     networks:
     - elk-demo
     logging:
@@ -153,7 +153,7 @@ services:
       -jar hello-world.jar"
 
   hello-fluentd:
-    image: garystafford/hello-logging:latest
+    image: garystafford/hello-world:latest
     networks:
     - elk-demo
     logging:
@@ -184,7 +184,7 @@ services:
       -jar hello-world.jar"
 
   hello-logspout:
-    image: garystafford/hello-logging:latest
+    image: garystafford/hello-world:latest
     networks:
     - elk-demo
     logging:

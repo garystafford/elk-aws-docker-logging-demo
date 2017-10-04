@@ -27,9 +27,9 @@ ID                  NAME                       MODE                REPLICAS     
 6va602lzfl4y        dockercloud-server-proxy   global              1/1                 dockercloud/server-proxy              *:2376->2376/tcp
 jjjddhuczx35        elk-demo_elk               replicated          1/1                 garystafford/custom-elk:latest        *:5000->5000/udp,*:5044->5044/tcp,*:5601->5601/tcp,*:9200->9200/tcp,*:12201->12201/udp
 mwm1rbo3dp3t        elk-demo_fluentd           global              2/2                 garystafford/custom-fluentd:latest    *:24224->24224/tcp,*:24224->24224/udp
-ofo02g2kbhg7        elk-demo_hello-fluentd     replicated          2/2                 garystafford/hello-logging:latest
-05txkpmizwxq        elk-demo_hello-gelf        replicated          2/2                 garystafford/hello-logging:latest
-pjs614raq37y        elk-demo_hello-logspout    replicated          2/2                 garystafford/hello-logging:latest
+ofo02g2kbhg7        elk-demo_hello-fluentd     replicated          2/2                 garystafford/hello-world:latest
+05txkpmizwxq        elk-demo_hello-gelf        replicated          2/2                 garystafford/hello-world:latest
+pjs614raq37y        elk-demo_hello-logspout    replicated          2/2                 garystafford/hello-world:latest
 9h0l0w2ej1yw        elk-demo_logspout          global              2/2                 garystafford/custom-logspout:latest
 wpxjji5wwd4j        elk-demo_nginx             replicated          2/2                 garystafford/custom-nginx:latest      *:80->80/tcp
 w0y5inpryaql        elk-demo_portainer         global              1/1                 portainer/portainer:latest            *:9000->9000/tcp
